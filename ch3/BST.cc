@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
-
+#include <cassert>
 
 template <class Key, class Value>
 class BST
@@ -14,7 +14,7 @@ public:
 		root_ = NULL;
 	}
 
-	void put(Key key, Value val){
+	void put(const Key& key, const Value& val){
 		root_ = put(root_, key, val);
 	}
 
@@ -37,8 +37,6 @@ public:
 	void mdelete(const Key& key){
 		root_ = mdelete(root_, key);
 	}
-
-
 
 	bool contains(const Key& key){
 		Node* x = root_;
@@ -64,19 +62,23 @@ public:
 		return size(root_);
 	}
 
-	Key min(){
-		return min(root_)->key_;
+	const Key* min(){
+		if (isEmpty()) return NULL;
+
+		return &min(root_)->key_;
 	}
 
 	
 
-	Key max(){
+	const Key* max(){
+		if (isEmpty()) return NULL;
+
 		Node* x = root_;
 		while (x->right_ != NULL){
 			x = x->right_;
 		}
 
-		return x->key_;
+		return &x->key_;
 	}
 
 	const Key* floor(const Key& key){
@@ -135,7 +137,7 @@ public:
 
 	std::vector<const Key*> keys(){
 		std::vector<const Key*> v;
-		keys(root_, v, min(), max());
+		keys(root_, v, *min(), *max());
 		return v;
 	}
 
@@ -148,7 +150,7 @@ private:
 		Node* right_;
 		int size_;
 
-		Node(Key key, Value val, int size){
+		Node(const Key& key, const Value& val, int size){
 			key_ = key;
 			value_ = val;
 			size_ = size;
@@ -235,7 +237,7 @@ private:
 		else return x;
 	}
 
-	Node* put(Node* x, Key key, Value val){
+	Node* put(Node* x, const Key& key, const Value& val){
 		if (x == NULL){
 			return new Node(key, val, 1);
 		}
@@ -300,69 +302,216 @@ private:
 
 };
 
+/*
+bulid a binary tree below:
+
+                               haha
+                                |
+            apple               |          peach
+              |                              |
+         NULL |  bitch               hello   |    wocao
+                  |                    |            
+              NULL|good            NULL|kaka 
+*/
+void TestBuildTree(BST<std::string, int>& tree){
+
+	tree.put(std::string("haha"), 20);
+	tree.put(std::string("apple"), 93);
+	tree.put(std::string("peach"), 19);
+	tree.put(std::string("bitch"), 18);
+	tree.put(std::string("hello"), 28);
+	tree.put(std::string("wocao"), 74);
+	tree.put(std::string("good"), 77);
+	tree.put(std::string("kaka"), 91);
+
+}
+
+void TestTreeGet(BST<std::string, int>& tree){
+
+	std::string s1("hello");
+	int* retNum = tree.get(s1);
+	if (*retNum == 28){
+		printf("tree.get passed.\n");
+	}else{
+		printf("tree.get failed.\n");
+	}
+
+	std::string s2("notFound");
+	int* retNum2 = tree.get(s2);
+	if (retNum2 == NULL){
+		printf("tree.get passed.\n");
+	}else{
+		printf("tree.get failed.\n");
+	}
+}
+
+void TestFloor(BST<std::string, int>& tree){
+	std::string s1("wocao");
+	const std::string* floor1 = tree.floor(s1);
+
+	std::string s2("hella");
+	const std::string* floor2 = tree.floor(s2);
+	const std::string expected2("haha");
+
+	if (*floor1 == s1 && *floor2 == expected2){
+		printf("tree.floor passed.\n");
+	}else{
+		printf("tree.floor failed.\n");
+	}
+
+}
+
+void TestTreeCeiling(BST<std::string, int>& tree){
+	std::string s1("bitch");
+	const std::string* ceiling1 = tree.ceiling(s1);
+
+	std::string s2("goodd");
+	const std::string* ceiling2 = tree.ceiling(s2);
+	std::string expected2("haha");
+	if (*ceiling1 == s1 && *ceiling2 == expected2){
+		printf("tree.ceiling passed.\n");
+	}else{
+		printf("tree.ceiling failed.\n");
+	}
+
+}
+
+void TestTreeSize(BST<std::string, int>& tree){
+	int size = tree.size();
+	if (size == 8){
+		printf("tree.size passed.\n");
+	}else{
+		printf("tree.size failed.\n");
+	}
+}
+
+void TestTreeRank(BST<std::string, int>& tree){
+	std::string s1("peach");
+	int r1 = tree.rank(s1);
+
+	std::string s2("applf");
+	int r2 = tree.rank(s2);
+
+	if (r1 == 6 && r2 == 1){
+		printf("tree.rank passed.\n");
+	}else{
+		printf("tree.rank failed.\n");
+	}
+}
+
+void TestTreeSelect(BST<std::string, int>& tree){
+	const std::string* s1 = tree.select(5);
+	std::string expected1("kaka");
+
+	const std::string* s2 = tree.select(-1);
+	const std::string* s3 = tree.select(8);
+
+	if (*s1 == expected1 && s2 == NULL && s3 == NULL){
+		printf("tree.select passed.\n");
+	}else{
+		printf("tree.select failed.\n");
+	}
+
+}
+
+void TestTreeContains(BST<std::string, int>& tree){
+	const std::string s1("good");
+	bool c1 = tree.contains(s1);
+
+	const std::string s2("notContains");
+	bool c2 = tree.contains(s2);
+
+	if (c1 && !c2){
+		printf("tree.contains passed.\n");
+	}else{
+		printf("tree.contains failed.\n");
+	}
+
+}
+
+void TestTreeKeys(BST<std::string, int>& tree){
+	std::vector<const std::string*> v = tree.keys();
+	assert(*v[0] == std::string("apple"));
+	assert(*v[1] == std::string("bitch"));
+	assert(*v[2] == std::string("good"));
+	assert(*v[3] == std::string("haha"));
+	assert(*v[4] == std::string("hello"));
+	assert(*v[5] == std::string("kaka"));
+	assert(*v[6] == std::string("peach"));
+	assert(*v[7] == std::string("wocao"));
+
+	printf("tree.keys passed.\n");
+}
+
+void TestDeleteMin(BST<std::string, int>& tree){
+	
+	tree.deleteMin();
+	const std::string* s1 = tree.min();
+	if (*s1 == std::string("bitch")){
+		printf("tree.deleteMin passed.\n");
+	}else{
+		printf("tree.deleteMin failed.\n");
+	}
+}
+
+void TestDeleteMax(BST<std::string, int>& tree){
+
+	tree.deleteMax();
+	const std::string* s1 = tree.max();
+	if (*s1 == std::string("peach")){
+		printf("tree.deleteMax passed.\n");
+	}else{
+		printf("tree.deleteMax failed.\n");
+	}
+}
+
+void TestTreeDelete(BST<std::string, int>& tree){
+	std::string d("peach");
+	tree.mdelete(d);
+
+	std::string d2("notExist");
+	tree.mdelete(d2);
+
+	if (!tree.contains(d) && !tree.contains(d2)){
+		printf("tree.mdelete passed.\n");
+	}else{
+		printf("tree.mdelete failed.\n");
+	}
+
+	std::vector<const std::string*> ks = tree.keys();
+	for (std::vector<const std::string*>::iterator it = ks.begin(); it != ks.end(); ++it){
+		tree.mdelete(*(*it));
+	}
+
+	if (tree.isEmpty()){
+		printf("tree.mdelete passed.\n");
+	}else{
+		printf("tree.mdelete failed.\n");
+	}
+
+}
+
+void Test(){
+	BST<std::string, int> tree;
+	TestBuildTree(tree);
+	TestTreeGet(tree);
+	TestFloor(tree);
+	TestTreeCeiling(tree);
+	TestTreeSize(tree);
+	TestTreeRank(tree);
+	TestTreeSelect(tree);
+	TestTreeContains(tree);
+	TestTreeKeys(tree);
+	TestDeleteMin(tree);
+	TestDeleteMax(tree);
+	TestTreeDelete(tree);
+}
+
 
 int main(int argc, const char* argv[])
 {
-	BST<std::string, int> tree;
 
-	char str[80] = {0};
-	int n;
-	while (scanf("%s%d", &str, &n) != EOF){
-		std::string s(str);
-		tree.put(s, n);
-	}
+	Test();
 
-	char* f = const_cast<char*>(argv[1]);
-	std::string test_str(f);
-
-	
-	//int* n1 = tree.get(f);
-	//printf("test tree get:%s value:%d\n", f, *n1);
-
-	//const std::string* f2 = tree.ceiling(f);
-	//printf("ceiling:%s\n", f2->c_str());
-
-	//int s = tree.size();
-	//printf("size %d\n", s);
-	
-
-	//std::string key(f);
-	//int r = tree.rank(key);
-	//printf("key:%s rank %d\n", key.c_str(), r);
-
-	//printf("tree contains:%s %d\n", f, tree.contains(test_str));
-
-	//int sn = atoi(f);
-	//printf("select %d get key:%s\n", sn, tree.select(sn)->c_str());
-
-	//char* f2 = const_cast<char*>(argv[2]);
-	//std::string test_str2(f2);
-	//std::vector<const std::string*> rkeys = tree.keys(test_str, test_str2);
-	//for (std::vector<const std::string*>::iterator it = rkeys.begin(); it != rkeys.end(); it++){
-	//	std::cout << *(*it) << " ";
-	//}
-
-	//char* f2 = const_cast<char*>(argv[2]);
-	//std::string test_str2(f2);
-	//int sn = tree.size(test_str, test_str2);
-	//printf("size between %s ~ %s is %d\n", f, f2, sn);
-
-	//tree.deleteMin();
-	//printf("after delete min, min is %s\n", tree.min().c_str());
-
-	//tree.deleteMax();
-	//printf("after delete max, max is %s\n", tree.max().c_str());
-
-	
-	
-	tree.mdelete(test_str);
-	printf("after delete %s, keys are:", f);
-
-	std::vector<const std::string*> keys = tree.keys();
-	for (std::vector<const std::string*>::iterator it = keys.begin(); it != keys.end(); it++){
-		printf(" %s", (*it)->c_str());
-	}
-	printf("\n");
-	
 	return 0;
 }

@@ -12,7 +12,7 @@ public:
 		root_ = NULL;
 	}
 
-	void put(Key key, Value val){
+	void put(const Key& key, const Value& val){
 		root_ = insert(root_, key, val);
 		root_->color_ = kBlack;
 	}
