@@ -79,12 +79,29 @@ public:
 		}
 
 		if (!isRed(root_->left_) && !isRed(root_->right_)) {
-			root_->color = kRed;
+			root_->color_ = kRed;
 		}
 
 		root_ = deleteMin(root_);
 		if (!isEmpty()) {
-			root_->color = kBlack;
+			root_->color_ = kBlack;
+		}
+
+		assert(isRedBlackBST());
+	}
+
+	void deleteMax(){
+		if (isEmpty()){
+			return;
+		}
+
+		if (!isRed(root_->left_) && !isRed(root_->right_)){
+			root_->color_ = kRed;
+		}
+
+		root_ = deleteMax(root_);
+		if (!isEmpty()){
+			root_->color_ = kBlack;
 		}
 
 		assert(isRedBlackBST());
@@ -111,8 +128,9 @@ public:
 		if (!isEmpty()){
 			root_->color_ = kBlack;
 		}
-	}
 
+		assert(isRedBlackBST());
+	}
 	
 
 private:
@@ -178,6 +196,25 @@ private:
 		}
 
 		h->left_ = deleteMin(h->left_);
+		return balance(h);
+	}
+
+	Node* deleteMax(Node* h){
+		if (isRed(h->left_)){
+			h = rotateRight(h);
+		}
+
+		if (h->right_ == NULL){
+			delete h;
+			return NULL;
+		}
+
+		if (!isRed(h->right_) && !isRed(h->right_->left_)){
+			h = moveRedRight(h);
+		}
+
+		h->right_ = deleteMax(h->right_);
+
 		return balance(h);
 	}
 
@@ -314,6 +351,16 @@ private:
 		h->right_->color_ = !h->right_->color_;
 	}
 
+	Node* min(Node* h){
+		assert( h != NULL);
+
+		if (h->left_ == NULL){
+			return h;
+		}
+
+		return min(h->left_);
+	}
+
 
 	enum {
 		kRed = 0,
@@ -344,6 +391,11 @@ int main(int argc, const char* argv[])
 
 	int* val = tree.get(f);
 	printf("key:%s get value:%d\n", f, *val);
+
+
+	tree.mdelete(test_str);
+	tree.deleteMin();
+	tree.deleteMax();
 
 	return 0;
 }
